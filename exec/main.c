@@ -22,17 +22,9 @@ int    open_file(char *av, int mode)
 									 S_IRUSR, S_IWUSR, S_IRGRP, S_IWGRP, S_IROTH);
 		printf("%d\n", fd); 
 	}
+	dup2(fd, mode);
+	close(fd);
 	return (fd);
-}
-
-int	ft_strcmp(char *s1, char *s2)
-{
-	int	i;
-
-	i = 0;
-	while (s1[i] == s2[i] && s1[i] != '\0' && s2[i] != '\0')
-		i++;
-	return (s1[i] - s2[i]);
 }
 
 char	**get_path(char **env)
@@ -88,7 +80,7 @@ void    redir(t_pipe *pipex, char *av, char **env)
 		close(door[0]);
 		dup2(door[1], 1);
 		close(door[1]);
-		exec()
+		exec(av, env);
 	}
 	else
 	{
@@ -107,11 +99,7 @@ int main(int ac, char **av, char **env)
 
 	i = 0;
 	fd_in = open_file(av[0], 0);
-	dup2(fd_in, 0);
-	close(fd_in);
 	redir(&pipe, av[i], env);
 	fd_out = open_file(av[ac - 1], 1);
-	dup2(fd_out, 1);
-	close(fd_out);
 	return (0);
 }

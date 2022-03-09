@@ -15,5 +15,7 @@ typedef struct s_pipe
     struct s_pipe child;
 }               t_pipe;
 
+int	ft_strcmp(char *s1, char *s2);
+char	**ft_split(char const *s, char c);
 
 #endif

@@ -1,39 +1,13 @@
 #include "pipe.h"
 
-int    open_file(char *av, int mode)
-{
-	int	fd;
-
-	if (mode == 0)
-	{
-		if (access(av, F_OK))
-		{
-			write(1, "Inexist fd\n", 13);
-		}
-		else
-		{
-			fd = open(av, O_RDONLY);
-			printf("SUCESS %d\n", fd); 
-		}
-	}
-	else
-	{
-		fd = open(av, O_CREAT | O_WRONLY | O_TRUNC,
-									 S_IRUSR, S_IWUSR, S_IRGRP, S_IWGRP, S_IROTH);
-		printf("%d\n", fd); 
-	}
-	dup2(fd, mode);
-	close(fd);
-	return (fd);
-}
 
 char	**get_path(char **env)
 {
 	char	**paths;
 
-	while (!ft_strncmp(env, "PATH" + 4))
+	while (ft_strncmp("PATH", *env, 4))
 		++env;
-	paths = ft_split(env, ':');
+	paths = ft_split(*env + 5, ':');
 	return (paths);
 }
 
@@ -46,7 +20,7 @@ char	*get_cmd_opt(char *cmd, char **env)
 	while (*paths)
 	{
 		good_path = ft_strjoin_l(*paths, cmd);
-		if (access(*paths, F_OK))
+		if (access(good_path, 0) == 0)
 			return (good_path);
 		free(good_path);
 		++paths;
@@ -56,31 +30,61 @@ char	*get_cmd_opt(char *cmd, char **env)
 
 void	exec(char *av, char **env)
 {
+	int		ret;
 	char	*path;
 	char	**args;
 
+	ret = 0;
 	args = ft_split(av, ' ');
 	path = get_cmd_opt(args[0], env);
-	if (!path)
+	if (!path)	
+	{
 		//Error
-	execve(path, args, env);
+		puts("eror path");
+		return ;
+	}
+	if (execve(path, args, env) == -1)
+	{
+		puts("Error command");
+		return ;
+	}
 }
 
 void    redir(t_pipe *pipex, char *av, char **env)
+{
+	pipex->child = fork();
+	if (pipex->child == 0)
+	{
+		close(pipex->door[0]);
+		dup2(pipex->door[1], 1);
+		close(pipex->door[1]);
+		exec(av, env);
+	}
+	else
+	{
+		close(pipex->door[1]);
+		dup2(pipex->door[0], 0);
+		close(pipex->door[0]);
+	}
+}
+
+
+
+void	last_child(t_pipe *pipex, int ac, char **av, char **env)
 {
 	int door[2];
 	int ret;
 
 	ret = pipe(door);
 	if (ret < 0)
-		printf("eror");
+		printf("eror redir");
 	pipex->child = fork();
 	if (pipex->child == 0)
 	{
 		close(door[0]);
-		dup2(door[1], 1);
-		close(door[1]);
-		exec(av, env);
+		dup2(pipex->fd_out, 1);
+		close(pipex->fd_out);
+		exec(av[ac - 2], env);
 	}
 	else
 	{
@@ -88,18 +92,54 @@ void    redir(t_pipe *pipex, char *av, char **env)
 		dup2(door[0], 0);
 		close(door[0]);
 	}
+
+}
+
+void	free_lst(t_pipe *head)
+{
+	while (head)
+	{
+		free(head);
+		head = head->next;
+	}
+}
+
+void	wait_lst(t_pipe *pipex)
+{
+	while (pipex)
+	{
+		waitpid(pipex->child, NULL, 0);
+		pipex = pipex->next;
+	}
 }
 
 int main(int ac, char **av, char **env)
 {
-	int fd_in;
-	int fd_out;
-	t_pipe  pipe;
-	int     i;
+	t_pipe  *pipex;
+	t_pipe  *head;
+	int		i;
+	int		fd_out;
+	int		door_fd[2];
 
-	i = 0;
-	fd_in = open_file(av[0], 0);
-	redir(&pipe, av[i], env);
-	fd_out = open_file(av[ac - 1], 1);
+	pipex = NULL;
+	i = 2;
+	pipex = create_lst(ac, pipex);
+	loop_fd(pipex, ac);
+	puts("lol1");
+	drive_fd(door_fd, av[1], 0);
+	head = pipex;
+	while (i < ac - 2)
+	{
+		redir(pipex, av[i], env);
+		pipex = pipex->next;
+		++i;
+	}
+	puts("lol2");
+	drive_fd(door_fd, av[ac - 1], 1);
+	last_child(pipex, ac, av, env);
+	pipex = head;
+	wait_lst(head);
+	puts("lol3");
+	free_lst(pipex);
 	return (0);
 }

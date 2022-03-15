@@ -1,6 +1,5 @@
 #include "pipe.h"
 
-
 int	ft_strcmp(char *s1, char *s2)
 {
 	int	i;
@@ -11,58 +10,30 @@ int	ft_strcmp(char *s1, char *s2)
 	return (s1[i] - s2[i]);
 }
 
-
-size_t	wordcount(char const *s, char const c)
+char	*ft_strjoin_l(char *path, char *cmd)
 {
-	size_t	i;
+	char	*ret_path;
 
-	i = 0;
-	while (*s)
-	{
-		if (*s != c)
-			i++;
-		while (*s != c && *s)
-			s++;
-		if (*s)
-			s++;
-	}
-	return (i);
-}
-
-size_t	length_word(char const *s, char const c)
-{
-	size_t	i;
-
-	i = 0;
-	while (s[i] && s[i] != c)
-		i++;
-	return (i);
-}
-
-char	**ft_split(char const *s, char c)
-{
-	char	**new_str;
-	size_t	x;
-	size_t	i;
-
-	x = 0;
-	i = 0;
-	if (s == NULL)
+	ret_path = (char *)malloc(sizeof(char) * ft_strlen(path) + ft_strlen(cmd) + 2);
+	if (!ret_path)
 		return (NULL);
-	new_str = ft_calloc(wordcount(s, c) + 1, sizeof(char *));
-	if (!new_str)
-		return (NULL);
-	while (s[i])
-	{
-		if (s[i] == c)
-			i++;
-		else
-		{
-			new_str[x] = ft_calloc(sizeof(char), length_word(s + i, c) + 1);
-			ft_memcpy(new_str[x++], s + i, length_word(s + i, c));
-			i += length_word(s + i, c);
-		}
-	}
-	return (new_str);
-}
+	int	i;
 
+	i = 0;
+	while (path[i])
+	{
+		ret_path[i] = path[i];
+		++i;
+	}
+	ret_path[i++] = '/';
+	int	j;
+	
+	j = 0;
+	while (cmd[j])
+	{
+		ret_path[i + j] = cmd[j];
+		++j;
+	}
+	ret_path[i + j] = '\0';
+	return (ret_path);
+}

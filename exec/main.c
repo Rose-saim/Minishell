@@ -68,23 +68,20 @@ void    redir(t_pipe *pipex, char *av, char **env, int out)
 	}
 }
 
-void	nbr(t_pipe *pipex, int i, char **av, char **env)
+void	nbr(t_pipe *pipex, int ac, char **av, char **env)
 {
-	t_pipe	*head;
+	int	i;
 
-	head = pipex;
-	(void)env;
-	(void)av;
-	while (i < 4)
+	i = 2;
+	while (i < ac - 2)
 	{
-		printf("ok%d\n", head->id);
-		// if (pipe(head->array->tab) < 0)
-		// 	return ;
-		// redir(head, av[i++], env, head->array->tab[1]);
+		if (pipe(pipex->array->tab) < 0)
+			return ;
+		redir(pipex, av[i], env, pipex->array->tab[1]);
 		++i;
-		head = head->next;
 	}
-	// redir(head, av[i], env, head->fd_out);
+	redir(pipex, av[i], env, pipex->fd_out);
+
 }
 
 void	free_lst(t_pipe *head)
@@ -97,33 +94,27 @@ void	free_lst(t_pipe *head)
 }
 
 void	wait_lst(t_pipe *pipex)
-{	
-	t_pipe	*head;
-
-	head = pipex;
+{
 	while (pipex)
 	{
-		waitpid(head->child, NULL, 0);
-		head = head->next;
+		waitpid(pipex->child, NULL, 0);
+		pipex = pipex->next;
 	}
 }
 
 
 int main(int ac, char **av, char **env)
 {
-	t_pipe  *pipex;
+	t_pipe  pipex;
 	t_mng	mng;
+	// t_pipe  head;
 	int		i;
 	int		door_fd[2];
 
 	i = 2;
-	pipex = NULL;
-	pipex = create_lst(ac, pipex, &mng);
+	create_lst(ac, &pipex, &mng);
 	drive_fd(door_fd[0], av[1], 0);
-	// drive_fd(door_fd[1], av[ac -	 1], 1);
-	nbr(pipex, i, av, env);
-	// wait_lst(&pipex);
-	exit(2);
-	free_lst(pipex);
+	drive_fd(door_fd[1], av[ac - 1], 1);
+	nbr(&pipex, ac, av, env);
 	return (0);
 }

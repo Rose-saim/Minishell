@@ -43,56 +43,48 @@ void	exec(char *av, char **env)
 		puts("eror path");
 		return ;
 	}
-	if (execve(path, args, env) == -1)
-	{
-		puts("Error command");
-		return ;
-	}
+	else
+		execve(path, args, env);
 }
 
-void    redir(t_pipe *pipex, char *av, char **env)
+void    redir(t_pipe *pipex, char *av, char **env, int out)
 {
 	pipex->child = fork();
+	if (pipex->child < 0)
+		write(1, "error\n", 6);
 	if (pipex->child == 0)
 	{
-		close(pipex->door[0]);
-		dup2(pipex->door[1], 1);
-		close(pipex->door[1]);
+		close(pipex->array->tab[0]);
+		dup2(out, STDOUT_FILENO);
+		close(out);
 		exec(av, env);
 	}
 	else
 	{
-		close(pipex->door[1]);
-		dup2(pipex->door[0], 0);
-		close(pipex->door[0]);
+		close(out);
+		dup2(pipex->array->tab[0], STDIN_FILENO);
+		close(pipex->array->tab[0]);
+		waitpid(pipex->child, NULL, 0);
 	}
 }
 
-
-
-void	last_child(t_pipe *pipex, int ac, char **av, char **env)
+void	nbr(t_pipe *pipex, int i, char **av, char **env)
 {
-	int door[2];
-	int ret;
+	t_pipe	*head;
 
-	ret = pipe(door);
-	if (ret < 0)
-		printf("eror redir");
-	pipex->child = fork();
-	if (pipex->child == 0)
+	head = pipex;
+	(void)env;
+	(void)av;
+	while (i < 4)
 	{
-		close(door[0]);
-		dup2(pipex->fd_out, 1);
-		close(pipex->fd_out);
-		exec(av[ac - 2], env);
+		printf("ok%d\n", head->id);
+		// if (pipe(head->array->tab) < 0)
+		// 	return ;
+		// redir(head, av[i++], env, head->array->tab[1]);
+		++i;
+		head = head->next;
 	}
-	else
-	{
-		close(door[1]);
-		dup2(door[0], 0);
-		close(door[0]);
-	}
-
+	// redir(head, av[i], env, head->fd_out);
 }
 
 void	free_lst(t_pipe *head)
@@ -105,41 +97,33 @@ void	free_lst(t_pipe *head)
 }
 
 void	wait_lst(t_pipe *pipex)
-{
+{	
+	t_pipe	*head;
+
+	head = pipex;
 	while (pipex)
 	{
-		waitpid(pipex->child, NULL, 0);
-		pipex = pipex->next;
+		waitpid(head->child, NULL, 0);
+		head = head->next;
 	}
 }
+
 
 int main(int ac, char **av, char **env)
 {
 	t_pipe  *pipex;
-	t_pipe  *head;
+	t_mng	mng;
 	int		i;
-	int		fd_out;
 	int		door_fd[2];
 
-	pipex = NULL;
 	i = 2;
-	pipex = create_lst(ac, pipex);
-	loop_fd(pipex, ac);
-	puts("lol1");
-	drive_fd(door_fd, av[1], 0);
-	head = pipex;
-	while (i < ac - 2)
-	{
-		redir(pipex, av[i], env);
-		pipex = pipex->next;
-		++i;
-	}
-	puts("lol2");
-	drive_fd(door_fd, av[ac - 1], 1);
-	last_child(pipex, ac, av, env);
-	pipex = head;
-	wait_lst(head);
-	puts("lol3");
+	pipex = NULL;
+	pipex = create_lst(ac, pipex, &mng);
+	drive_fd(door_fd[0], av[1], 0);
+	// drive_fd(door_fd[1], av[ac -	 1], 1);
+	nbr(pipex, i, av, env);
+	// wait_lst(&pipex);
+	exit(2);
 	free_lst(pipex);
 	return (0);
 }

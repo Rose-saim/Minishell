@@ -17,28 +17,27 @@ int    open_file(char *av, int mode)
 				S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH));
 }
 
-void    drive_fd(int fd[], char *file, int mode)
+void    drive_fd(int fd, char *file, int mode)
 {
 
 	if (mode == 0)
 	{
-		fd[0] = open_file(file, mode);
-		if (dup2(fd[0], mode) == -1)
+		fd = open_file(file, mode);
+		if (dup2(fd, mode) == -1)
 		{
 			puts("error fd");
 			return ;
 		}
-		close(fd[0]);
+		close(fd);
 	}
 	else
 	{
-		fd[1] = open_file(file, mode);
-		if (dup2(fd[1], mode) == -1)
+		fd = open_file(file, mode);
+		if (dup2(fd, mode) == -1)
 		{
 			puts("error fd2");
 			return ;
 		}
-		close(fd[1]);
-	puts("lol2");
+		close(fd);
 	}
 }

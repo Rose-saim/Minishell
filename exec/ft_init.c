@@ -7,13 +7,13 @@ t_pipe	*create_lst(int ac, t_pipe *lst_pipex, t_mng *mng)
 	t_pipe	*drive_lst;
 
 	int	i = 1;
-	lst_pipex = NULL;
 	if (!lst_pipex)
 	{
 		lst_pipex = (t_pipe *)malloc(sizeof(t_pipe));
 		if (!lst_pipex)
 			return (NULL);
 		lst_pipex->id = i++;
+		lst_pipex->array = mng;
 		lst_pipex->next = NULL;
 	}
 	drive_lst = lst_pipex;

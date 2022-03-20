@@ -28,6 +28,8 @@ typedef struct s_pipe
 
 int	ft_strcmp(char *s1, char *s2);
 
+int    open_file(char *av, int mode);
+
 t_pipe	*create_lst(int ac, t_pipe *lst_pipex, t_mng *mng);
 
 void    drive_fd(int fd, char *file, int mode);

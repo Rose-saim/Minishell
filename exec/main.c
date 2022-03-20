@@ -64,32 +64,7 @@ void    redir(t_pipe *pipex, char *av, char **env, int out)
 		close(out);
 		dup2(pipex->array->tab[0], STDIN_FILENO);
 		close(pipex->array->tab[0]);
-		waitpid(pipex->child, NULL, 0);
-	}
-}
-
-void	nbr(t_pipe *pipex, int ac, char **av, char **env)
-{
-	int	i;
-
-	i = 2;
-	while (i < ac - 2)
-	{
-		if (pipe(pipex->array->tab) < 0)
-			return ;
-		redir(pipex, av[i], env, pipex->array->tab[1]);
-		++i;
-	}
-	redir(pipex, av[i], env, pipex->fd_out);
-
-}
-
-void	free_lst(t_pipe *head)
-{
-	while (head)
-	{
-		free(head);
-		head = head->next;
+		// waitpid(pipex->child, NULL, 0);
 	}
 }
 
@@ -102,19 +77,49 @@ void	wait_lst(t_pipe *pipex)
 	}
 }
 
+void	nbr(t_pipe *pipex, int ac, char **av, char **env)
+{
+	t_pipe	*head;
+	int	i;
+
+	i = 2;
+	head = pipex;
+	while (i < ac - 2)
+	{
+		if (pipe(pipex->array->tab) < 0)
+			return ;
+		redir(pipex, av[i], env, pipex->array->tab[1]);
+		pipex = pipex->next;
+		++i;
+	}
+	pipex->fd_out = open_file(av[ac - 1], 1);
+	redir(pipex, av[i], env, pipex->fd_out);
+	wait_lst(head);
+}
+
+void	free_lst(t_pipe *head)
+{
+	while (head)
+	{
+		free(head);
+		head = head->next;
+	}
+}
+
+
 
 int main(int ac, char **av, char **env)
 {
-	t_pipe  pipex;
+	t_pipe  *pipex;
 	t_mng	mng;
-	// t_pipe  head;
 	int		i;
 	int		door_fd[2];
 
 	i = 2;
-	create_lst(ac, &pipex, &mng);
+	pipex = NULL;
+	pipex = create_lst(ac, pipex, &mng);
 	drive_fd(door_fd[0], av[1], 0);
 	drive_fd(door_fd[1], av[ac - 1], 1);
-	nbr(&pipex, ac, av, env);
+	nbr(pipex, ac, av, env);
 	return (0);
 }

@@ -1,6 +1,6 @@
-MANDA_NAMES = 	main.c utils.c ../libft/ft_split.c ../libft/ft_strlen.c ../libft/ft_strncmp.c\
+MANDA_NAMES = 	../libft/ft_split.c ../libft/ft_strlen.c ../libft/ft_strncmp.c\
 				../libft/ft_calloc.c ../libft/ft_memset.c ../libft/ft_memcpy.c\
-				manage_fd.c ft_init.c
+				exec_fd.c free_lst.c ft_init.c get_cmd.c main.c manage_fd.c utils.c 
 
 MANDA_OBJS =	 $(MANDA_NAMES:.c=.o)
 

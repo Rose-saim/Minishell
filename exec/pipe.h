@@ -26,17 +26,23 @@ typedef struct s_pipe
 }               t_pipe;
 
 
-int	ft_strcmp(char *s1, char *s2);
-
-int    open_file(char *av, int mode);
-
-t_pipe	*create_lst(int ac, t_pipe *lst_pipex, t_mng *mng);
-
-void    drive_fd(int fd, char *file, int mode);
-void	exec(char *av, char **env);
-void	loop_fd(t_pipe *pipex, int ac);
-
+int		ft_strcmp(char *s1, char *s2);
 char	**ft_split(char const *s, char c);
 char	*ft_strjoin_l(char *path, char *cmd);
+
+char	**get_path(char **env);
+char	*get_cmd_opt(char *cmd, char **env);
+
+int		open_file(char *av, int mode);
+void	drive_fd(int fd, char *file, int mode);
+void	loop_fd(t_pipe *pipex, int ac);
+
+void	exec(char *av, char **env);
+void	exec_cmds(t_pipe *pipex, int ac, char **av, char **env);
+void    redir(t_pipe *pipex, char *av, char **env, int out);
+
+t_pipe	*create_lst(int ac, t_pipe *lst_pipex, t_mng *mng);
+void	free_lst(t_pipe *head);
+void	wait_lst(t_pipe *pipex);
 
 #endif

@@ -29,7 +29,7 @@ void    redir(t_pipe *pipex, char *av, char **env, int out)
 		close(pipex->array->tab[0]);
 		if (out != 3)
 		{
-			dup2(out, STDOUT_FILENO);
+			verif_dup2(out, STDOUT_FILENO);
 			close(out);
 		}
 		exec(av, env);
@@ -37,7 +37,7 @@ void    redir(t_pipe *pipex, char *av, char **env, int out)
 	else
 	{
 		close(out);
-		dup2(pipex->array->tab[0], STDIN_FILENO);
+		verif_dup2(pipex->array->tab[0], STDIN_FILENO);
 		close(pipex->array->tab[0]);
 	}
 }

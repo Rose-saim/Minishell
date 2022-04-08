@@ -23,21 +23,13 @@ void    drive_fd(int fd, char *file, int mode)
 	if (mode == 0)
 	{
 		fd = open_file(file, mode);
-		if (dup2(fd, mode) == -1)
-		{
-			puts("error fd");
-			return ;
-		}
+		verif_dup2(fd, mode);
 		close(fd);
 	}
 	else
 	{
 		fd = open_file(file, mode);
-		if (dup2(fd, mode) == -1)
-		{
-			puts("error fd2");
-			return ;
-		}
+		verif_dup2(fd, mode);
 		close(fd);
 	}
 }

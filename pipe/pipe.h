@@ -27,6 +27,7 @@ typedef struct s_pipe
 
 
 int		ft_strcmp(char *s1, char *s2);
+int		is_empty(char **av);
 char	**ft_split(char const *s, char c);
 char	*ft_strjoin_l(char *path, char *cmd);
 
@@ -40,6 +41,7 @@ void	loop_fd(t_pipe *pipex, int ac);
 void	exec(char *av, char **env);
 void	exec_cmds(t_pipe *pipex, int ac, char **av, char **env);
 void    redir(t_pipe *pipex, char *av, char **env, int out);
+void	verif_dup2(int fd, int mode);
 
 t_pipe	*create_lst(int ac, t_pipe *lst_pipex, t_mng *mng);
 void	free_lst(t_pipe *head);
